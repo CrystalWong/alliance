@@ -16,6 +16,10 @@ import AfficheInfo from '@/components/AfficheInfo'
 import ChildAccount from '@/components/ChildAccount'
 import AddChildAccount from '@/components/AddChildAccount'
 import Manager from '@/components/Manager'
+import Renovation from '@/components/Renovation'
+import SpecialHouse from '@/components/SpecialHouse'
+import SpecialHealthy from '@/components/SpecialHealthy'
+import SpecialTravel from '@/components/SpecialTravel'
 
 Vue.use(Router)
 
@@ -78,7 +82,14 @@ export default new Router({
     {
       path: '/recommend',
       name: 'Recommend',
-      component: Recommend
+      component: Recommend,
+      beforeEnter: (to, from, next) => {
+        var logFlag = checkLogin()
+        if (logFlag === true) {
+          next({ path: '/login' })
+        }
+        next()
+      }
     },
     {
       path: '/affiche',
@@ -93,12 +104,46 @@ export default new Router({
     {
       path: '/childAccount',
       name: 'ChildAccount',
-      component: ChildAccount
+      component: ChildAccount,
+      beforeEnter: (to, from, next) => {
+        var logFlag = checkLogin()
+        if (logFlag === true) {
+          next({ path: '/login' })
+        }
+        next()
+      }
     },
     {
       path: '/addChildAccount',
       name: 'AddChildAccount',
-      component: AddChildAccount
+      component: AddChildAccount,
+      beforeEnter: (to, from, next) => {
+        var logFlag = checkLogin()
+        if (logFlag === true) {
+          next({ path: '/login' })
+        }
+        next()
+      }
+    },
+    {
+      path: '/renovation',
+      name: 'Renovation',
+      component: Renovation
+    },
+    {
+      path: '/SpecialHouse',
+      name: 'SpecialHouse',
+      component: SpecialHouse
+    },
+    {
+      path: '/SpecialHealthy',
+      name: 'SpecialHealthy',
+      component: SpecialHealthy
+    },
+    {
+      path: '/SpecialTravel',
+      name: 'SpecialTravel',
+      component: SpecialTravel
     },
     {
       path: '/mine',

@@ -7,7 +7,7 @@
         <img src="../assets/img/icon-7.png" width="88%">
       </div>
       <ul class="f1-2">
-        <li><h4>{{ unionBusinessName }}</h4></li>
+        <li><h4>{{ userName }}</h4></li>
         <li>{{ mobile }}</li>
       </ul>
     </div>
@@ -49,12 +49,11 @@ export default {
   name: 'Mine',
   data () {
     return {
-      unionBusinessName: this.$store.state.unionBusinessName,
+      userName: this.$store.state.userName,
       mobile: this.$store.state.mobile,
       loginFlag: this.$store.state.loginFlag,
       params: {
-        // 'unionId': this.$store.state.userInfo.unionId
-        'unionId': 'HZS201703170000126813'
+        'unionId': this.$store.state.unionBusinessId
       }
     }
   },

@@ -28,25 +28,28 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-        '/v1': {
-          target: 'http://10.10.33.48/v1',
+        '/user-api': {
+          // target: 'http://10.10.33.48/',//开发
+          target: 'http://10.10.32.48/',//测试
           changeOrigin: true,
           pathRewrite: {
-            '^/v1': ''
+            '^/user-api': ''
           }
         },
-        '/golden': {
-          target: 'http://10.10.32.136/',
+        '/jyhouse-union': {
+          target: 'http://10.10.32.136/',//测试 合作中心
+          // target: 'http://10.10.33.136/',//开发 合作中心
           changeOrigin: true,
           pathRewrite: {
-            '^/golden': ''
+            '^/jyhouse-union': ''
           }
         },
-        '/customer': {
-          target: 'http://10.10.33.116/',
+        '/jysteward-centerapipre': {
+          // target: 'http://10.10.33.116/',//开发 金管家中心
+          target: 'http://10.10.32.116/',//测试 金管家中心
           changeOrigin: true,
           pathRewrite: {
-            '^/customer': ''
+            '^/jysteward-centerapipre': ''
           }
         },
         '/recommend': {
@@ -61,6 +64,20 @@ module.exports = {
           changeOrigin: true,
           pathRewrite: {
             '^/jycms-api': ''
+          }
+        },
+        '/ticket': {
+          target: 'http://dev.jyall.com',
+          changeOrigin: true,
+          pathRewrite: {
+            '^/ticket': ''
+          }
+        },
+        '/common-push': {
+          target: 'http://m.jyall.com/common-push',
+          changeOrigin: true,
+          pathRewrite: {
+            '^/common-push': ''
           }
         }
     },

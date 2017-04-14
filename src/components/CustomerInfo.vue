@@ -15,9 +15,13 @@
   			<span>{{ customerInfo.goldenCommon.inputManName }}</span>
   		</p>
   		<p>
-  			<span>归属人：</span>
-  			<span>{{ customerInfo.goldenCommon.belongManName }}</span>
-  			<span class="tel">{{ customerInfo.goldenCommon.belongManTel }}</span>
+        <span>归属人：</span>
+        <span>{{ customerInfo.goldenCommon.belongManName }}</span>
+        <span class="tel">{{ customerInfo.goldenCommon.belongManTel }}</span>
+      </p>
+      <p class="remarks" v-if="customerInfo.remarks">
+  			<span class="remarksTit">备注：</span>
+  			<span class="remarksInfo">{{ customerInfo.remarks }}</span>
   		</p>
   	</div>
 
@@ -60,11 +64,11 @@
   					</p>
             <p>
               <span>朝向要求:</span>
-              <span>{{ i.orientation.name }}</span>
+              <span v-if="i.orientation !== null">{{ i.orientation.name }}</span>
             </p>
   					<p>
   						<span>首选位置:</span>
-  						<span>{{ i.provinceName }} {{ i.cityName }} {{ i.county }} {{ i.businessDistrictName }}</span>
+  						<span>{{ i.provinceName }} {{ i.cityName }} {{ i.countyName }} {{ i.districtName }}</span>
   					</p>
   					<p>
   						<span>意向小区:</span>
@@ -95,7 +99,7 @@
             </p>
             <p>
               <span>所在地区:</span>
-              <span>{{ i.cityName }}</span>
+              <span>{{ i.provinceName }} {{ i.cityName }} {{ i.countyName }} {{ i.districtName }}</span>
             </p>
             <p>
               <span>意向小区:</span>
@@ -126,7 +130,7 @@
             </p>
             <p>
               <span>首选位置:</span>
-              <span>{{ i.provinceName }} {{ i.cityName }} {{ i.county }} {{ i.businessDistrictName }}</span>
+              <span>{{ i.provinceName }} {{ i.cityName }} {{ i.countyName }} {{ i.districtName }}</span>
             </p>
             <p>
               <span>意向楼盘:</span>
@@ -146,7 +150,7 @@
             </p>
           </div>
           <div v-if="i.demandStatus=='5'">
-            <span class="type">装修</span>
+            <span class="type">大家装</span>
             <p>
               <span>预算:</span>
               <span>{{ i.lowerBudgetPrice }}-{{ i.upperBudgetPrice }}万</span>
@@ -157,7 +161,29 @@
             </p>
           </div>
           <div v-if="i.demandStatus=='6'">
-            <span class="type">装修</span>
+            <span class="type">家政</span>
+            <p>
+              <span>预算:</span>
+              <span>{{ i.lowerBudgetPrice }}-{{ i.upperBudgetPrice }}万</span>
+            </p>
+            <p>
+              <span>备注:</span>
+              <span>{{ i.remarks }}</span>
+            </p>
+          </div>
+          <div v-if="i.demandStatus=='7'">
+            <span class="type">美丽之旅</span>
+            <p>
+              <span>预算:</span>
+              <span>{{ i.lowerBudgetPrice }}-{{ i.upperBudgetPrice }}万</span>
+            </p>
+            <p>
+              <span>备注:</span>
+              <span>{{ i.remarks }}</span>
+            </p>
+          </div>
+          <div v-if="i.demandStatus=='8'">
+            <span class="type">健康之旅</span>
             <p>
               <span>预算:</span>
               <span>{{ i.lowerBudgetPrice }}-{{ i.upperBudgetPrice }}万</span>
@@ -169,7 +195,9 @@
           </div>
         </div>
 			</div>
-			<div class="cus_info_follow" v-show="customerFollowShow">
+			<!-- <div class="cus_info_follow" v-show="customerFollowShow">
+        <div class="cus_info_nofollow" v-show="noFollowShow"> -->
+      <div class="cus_info_follow" v-show="customerFollowShow">
         <div class="cus_info_nofollow" v-show="noFollowShow">
         </div>
 				<div class="cus_info_follow_item" v-for="i,index in customerFollow">
@@ -243,14 +271,15 @@ export default {
   data () {
     return {
       arrTabStatus: [true, false, false],
-      customerRequireShow: false,
+      customerRequireShow: true,
       noRequireShow: false,
       customerFollowShow: false,
       noFollowShow: false,
-      customerSeeShow: true,
+      customerSeeShow: false,
       noSeeShow: false,
       customerInfo: {
-        'goldenCommon': {}
+        'goldenCommon': {},
+        'name': ''
       },
       customerFollow: [],
       customerSee: [],
@@ -262,9 +291,10 @@ export default {
     // 请求参数，从列表页带过来
     this.currentId = this.$route.query.currentId
     this.messageNoticeId = this.$route.query.messageNoticeId
-    var url = 'customer' + '/v1/unionBusinessM/1.0/readCustomerNotice?customerId=' + this.currentId + '&messageNoticeId=' + this.messageNoticeId
+    // var url = 'customer' + '/v1/unionBusinessM/1.0/readCustomerNotice?customerId=' + this.currentId + '&messageNoticeId=' + this.messageNoticeId
+    var url = '/jysteward-centerapipre/v1/unionBusinessM/1.0/readCustomerNotice?customerId=' + this.currentId + '&messageNoticeId=' + this.messageNoticeId
     this.$http.get(url).then(function (res) {
-      console.log(res)
+      // console.log(res)
       this.customerInfo = res.body
     })
   },
@@ -283,7 +313,8 @@ export default {
           this.arrTabStatus = [false, true, false]
           this.customerRequireShow = this.customerSeeShow = false
           this.customerFollowShow = true
-          this.$http.get('customer' + '/v1/customerV2/queryCustomerFollows?customerId=CRI201612130000000020').then(function (res) {
+          // this.$http.get('customer' + '/v1/customerV2/queryCustomerFollows?customerId=' + this.currentId).then(function (res) {
+          this.$http.get('/jysteward-centerapipre/v1/customerV2/queryCustomerFollows?customerId=' + this.currentId).then(function (res) {
             this.customerFollow = res.body
           })
           break
@@ -292,8 +323,9 @@ export default {
           this.arrTabStatus = [false, false, true]
           this.customerFollowShow = this.customerRequireShow = false
           this.customerSeeShow = true
-          this.$http.get('customer' + '/v1/customerV2/queryCustomerTakeLooks?customerId=CRI201612130000000020&demandStatus=0').then(function (res) {
-            console.log(res)
+          // this.$http.get('customer' + '/v1/customerV2/queryCustomerTakeLooks?customerId=' + this.currentId + '&demandStatus=0').then(function (res) {
+          this.$http.get('/jysteward-centerapipre/v1/customerV2/queryCustomerTakeLooks?customerId=' + this.currentId + '&demandStatus=0').then(function (res) {
+            // console.log(res)
             this.customerSee = res.body
           })
           break
@@ -321,7 +353,7 @@ export default {
     }
   }
   .cus_info_cus{
-  	margin:.9rem 0 0 0;height: 2.7rem;padding: 0 0 0 .2rem;
+  	margin:.9rem 0 0 0;padding: 0 0 0 .2rem;overflow: hidden;
   	p{
   		height: .9rem;line-height: .9rem;
   		text-align: left;
@@ -344,6 +376,9 @@ export default {
   			color: #333;
   		}
   	}
+    .remarks { height: auto;line-height: 1.5;overflow: hidden; }
+    .remarksTit { width: 15%; }
+    .remarksInfo { width: 83%;}
   }
   .cus_info_content{
   	width: 100%;
@@ -381,10 +416,10 @@ export default {
     }
   }
   .cus_info_require_item{
-  	border-bottom: 1px dashed #ccc;position: relative;padding: .64rem 0 .2rem 0 ;
+  	border-bottom: 1px dashed #ccc;position: relative;padding: .64rem 0 .2rem 0 ;overflow: hidden;
   	.type{
 			position: absolute;
-			top:.24rem;left: 0;width: .85rem;height: .32rem;line-height: .32rem;background: #fee5e0;
+			top:.24rem;left: 0;width: 16%;height: .32rem;line-height: .32rem;background: #fee5e0;
   	}
   	p{
   		height: .46rem;line-height: .46rem;
@@ -392,27 +427,34 @@ export default {
   			float: left;
   		}
   		span:first-child{
-  			width: 1.5rem;
-  			text-align: left;
+  			width: 17%;
+  			text-align: right;
   		}
+      span:last-child{
+        width: 81%;
+        margin-left: 2%;
+        text-align: left;
+      }
   	}
   }
   .cus_info_nofollow{
     min-height: 3rem;width: 100%;background: url(../assets/img/cusinfonofollow.jpg) no-repeat center 1.46rem;background-size: .8rem 1.34rem;
   }
   .cus_info_follow_item{
-  	border-bottom: 1px dashed #ccc;position: relative;padding: .24rem 0 .64rem 0 ;
+  	border-bottom: 1px dashed #ccc;position: relative;padding: .24rem 0 .64rem 0 ;overflow: hidden;
   	p{
   		height: .46rem;line-height: .46rem;
   		span{
   			float: left;
   		}
   		span:first-child{
-  			width: 1.1rem;
+  			width: 17%;
   			text-align: right;
   		}
   		span:last-child{
-  			text-indent: .15rem;
+        width: 81%;
+        margin-left: 2%;
+        text-align: left;
   		}
   	}
   	.time{
@@ -423,18 +465,20 @@ export default {
     min-height: 3rem;width: 100%;background: url(../assets/img/cusinfonosee.jpg) no-repeat center 1.46rem;background-size: .56rem 1.29rem;
   }
   .cus_info_see_item{
-  	border-bottom: 1px dashed #ccc;position: relative;padding: .24rem 0 .2rem 0 ;
+  	border-bottom: 1px dashed #ccc;position: relative;padding: .24rem 0 .2rem 0 ;overflow: hidden;
   	p{
   		height: .46rem;line-height: .46rem;
   		span{
   			float: left;
   		}
   		span:first-child{
-  			width: 1.1rem;
+  			width: 17%;
   			text-align: right;
   		}
   		span:last-child{
-  			text-indent: .15rem;
+  			width: 81%;
+        margin-left: 2%;
+        text-align: left;
   		}
   	}
   }

@@ -4,28 +4,38 @@
       <a onclick="window.history.go(-1)"></a>
     </div>
     <div class="aff_info_content">
-      <h2>下周拓展公告</h2>
+      <h2>{{ affiches.title }}</h2>
       <p>
-        2016-12-27 12:12
+        {{ affiches.createTime }}
       </p>
       <p>
-        公司下周膜举   行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......
-      </p>
-      <p>
-        公司下周膜举   行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......公司下周膜举行拓展活动，全员必须参加......
+        {{ affiches.content }}
       </p>
     </div>
   </div>
 </template>
 
 <script>
+import { Toast } from 'mint-ui'
 export default {
   name: 'afficheInfo',
   data () {
     return {
-      num: 3,
+      affiches: [],
       noAfficheShow: false
     }
+  },
+  created () {
+    this.$http.get('/common-push/v1/push?type=4&startTime=0&isPreview=false', {'headers': {'APPkey': '3'}}).then(function (res) {
+      console.log(res.body)
+      this.affiches = res.body
+    }).catch(function (response) {
+      if (response.body.code !== 200 && response.body.message) {
+        Toast(response.body.message)
+      } else {
+        Toast('哇哦，网络不给力')
+      }
+    })
   }
 }
 </script>

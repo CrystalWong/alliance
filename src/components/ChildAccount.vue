@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import { Toast } from 'mint-ui'
 export default {
   name: 'afficheInfo',
   data () {
@@ -30,13 +31,19 @@ export default {
   methods: {
   },
   created () {
-    this.$http.get('golden' + '/v1/provider/1.0/getUnionChildren/UIN2016071500003331').then(function (res) {
-      console.log(res)
+    // this.$http.get('golden' + '/v1/provider/1.0/getUnionChildren/' + this.$store.state.unionBusinessId).then(function (res) {
+    this.$http.get('/jyhouse-union/v1/provider/1.0/getUnionChildren/' + this.$store.state.unionBusinessId).then(function (res) {
       this.childAccountList = res.body
+    }).catch(function (response) {
+      if (response.body.code !== 200 && response.body.message) {
+        Toast(response.body.message)
+      } else {
+        Toast('哇哦，网络不给力')
+      }
     })
   }
 }
-</script>
+</script> 
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">

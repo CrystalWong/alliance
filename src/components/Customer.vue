@@ -6,10 +6,10 @@
   
     <div class="cus_tab clearfix">
       <p>
-        <span :class="{'checked':tabCheck}" @click="tabChange(1)">全部</span>
+        <span :class="{'checked':!tabCheck}" @click="tabChange(0)">全部</span>
       </p>
       <p>
-        <span :class="{'checked':!tabCheck}" @click="tabChange(0)">提醒<b :class="{'newicon':hasNew}"></b></span>
+        <span :class="{'checked':tabCheck}" @click="tabChange(1)">提醒<b :class="{'newicon':hasNew}"></b></span>
       </p>
     </div>
 
@@ -17,7 +17,7 @@
       <div class="no_cus" v-show="noCusIsShow"></div>
       <div class="no_warn" v-show="noWarnIsShow"></div>
       <ul>
-        <li class="cus_list_item" v-for="i,index in customerListData">
+        <li class="cus_list_item" v-for="i,index in customerListData" v-show="!tabCheck">
           <router-link :to="{path:'customerInfo',query:{currentId:i.customerId,messageNoticeId:'all'}}"></router-link>
           <h3>{{ i.name }}</h3>
           <p>
@@ -26,12 +26,12 @@
           </p>
           <b class="newwarn" v-show="i.messageNoticeCount==1">新提醒</b>
         </li>
-        <li class="cus_list_item" v-for="i,index in customerWarnData">
+        <li class="cus_list_item" v-for="i,index in customerWarnData" v-show="tabCheck">
           <router-link :to="{path:'customerInfo',query:{currentId:i.customerId,messageNoticeId:i.messageNoticeId}}"></router-link>
           <h3>{{ i.name }}</h3>
           <p>
               添加人：<span>{{ i.inputManName }}</span>
-              <time>{{ i.customerCreateTime }}</time>
+              <time>{{ i.createTimeStr }}</time>
           </p>
           <b class="newwarn">新提醒</b>
         </li>
@@ -41,11 +41,12 @@
 </template>
 
 <script>
+import { Toast } from 'mint-ui'
 export default {
   name: 'customer',
   data () {
     return {
-      tabCheck: 1, //  tab切换状态控制
+      tabCheck: 0, //  tab切换状态控制
       hasNew: false, // 是否显示新提醒小圆点
       noCusIsShow: false, // 是否显示没有客户页
       noWarnIsShow: false, // 是否显示没有新提醒页
@@ -54,38 +55,84 @@ export default {
     }
   },
   methods: {
+    getData (type) {
+      var pamars = {
+        'unionId': this.$store.state.unionBusinessId,
+        'unionUserId': this.$store.state.unionId,
+        'isParents': this.$store.state.isMaster,
+        'isOnlyNoticeFlag': type,
+        'pageSize': '100',
+        'pageNo': '1'
+      }
+      this.$http.post('/jysteward-centerapipre/v1/unionBusinessM/1.0/getCustomersByUnionId', pamars).then(function (res) {
+        // console.log(res)
+        var self = this
+        if (type === '1') {
+          this.customerWarnData = res.body.customerList
+          this.customerWarnData.forEach(function (i) {
+            if (i.messageNoticeCount === '1') {
+              self.hasNew = true
+            }
+          })
+        } else {
+          this.customerListData = res.body.customerList
+          this.customerListData.forEach(function (i) {
+            if (i.messageNoticeCount === '1') {
+              self.hasNew = true
+            }
+          })
+        }
+      }).catch(function (response) {
+        if (response.body.code !== 200 && response.body.message) {
+          Toast(response.body.message)
+        } else {
+          Toast('哇哦，网络不给力')
+        }
+      })
+    },
     tabChange (status) {
       if (this.tabCheck === status) return
       this.tabCheck = status
-      if (status === 0) {
-        this.$http.get('customer' + '/v1/unionBusinessM/1.0/getCustomerNoticees/UIN2016071500003331').then(function (res) {
-          console.log(res)
-          this.customerListData = []
-          this.customerWarnData = res.body.dataList
-        })
+      if (status === 1) {
+        this.getData('1')
+        // this.customerListData = []
+        // this.$http.get('/jysteward-centerapipre/v1/unionBusinessM/1.0/getCustomerNoticees/' + this.$store.state.unionId).then(function (res) {
+        //   this.customerWarnData = res.body.customerList
+        // }).catch(function (response) {
+        //   if (response.body.code !== 200 && response.body.message) {
+        //     Toast(response.body.message)
+        //   } else {
+        //     Toast('哇哦，网络不给力')
+        //   }
+        // })
+        // return
         return
       }
-      if (status === 1) {
-        this.$http.get('customer' + '/v1/unionBusinessM/1.0/getCustomersByUnionId/UIN2016071500003331').then(function (res) {
-          this.customerWarnData = []
-          this.customerListData = res.body.customerList
-        })
+      if (status === 0) {
+        this.getData('0')
+        // this.customerWarnData = []
+        // var url = ''
+        // if (this.$store.state.isMaster === '0') {
+        //   url = '/jysteward-centerapipre/v1/unionBusinessM/1.0/getCustomersByUnionUserId/' + this.$store.state.unionId
+        // } else {
+        //   url = '/jysteward-centerapipre/v1/unionBusinessM/1.0/getCustomersByUnionId/' + this.$store.state.unionBusinessId
+        // }
+        // this.$http.get(url).then(function (res) {
+        //   this.customerListData = res.body.customerList
+        // }).catch(function (response) {
+        //   if (response.body.code !== 200 && response.body.message) {
+        //     Toast(response.body.message)
+        //   } else {
+        //     Toast('哇哦，网络不给力')
+        //   }
+        // })
         return
       }
     }
   },
   created () {
     this.tabChange()
-    this.$http.get('customer' + '/v1/unionBusinessM/1.0/getCustomersByUnionId/UIN2016071500003331').then(function (res) {
-      console.log(res)
-      this.customerListData = res.body.customerList
-      var self = this
-      this.customerListData.forEach(function (i) {
-        if (i.messageNoticeCount === '1') {
-          self.hasNew = true
-        }
-      })
-    })
+    this.getData('0')
   }
 }
 </script>

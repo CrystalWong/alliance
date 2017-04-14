@@ -33,8 +33,8 @@ export default {
   methods: {
     callManager () {
       MessageBox.confirm('确定拨打电话' + this.goldenTel + '?').then(action => {
-        console.log('打电话')
-        window.location.href = 'tel://' + '13520285564'
+        // console.log('打电话')
+        window.location.href = 'tel:' + this.$store.state.goldenTel
       }).catch(action => {})
     }
   }

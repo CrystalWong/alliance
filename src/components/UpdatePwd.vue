@@ -6,12 +6,13 @@
       </router-link>
     </mt-header>
     <div class="f2">
-      <mt-field placeholder="原密码" type="text" v-model="oldPwd"></mt-field>
-      <mt-field placeholder="请设置新密码" type="password" v-model="newPwd"></mt-field>
-      <mt-field placeholder="请重复新密码" type="password" v-model="newPwdRe"></mt-field>
+      <mt-field placeholder="原密码" type="password" v-model.trim="oldPwd" :attr="{ minlength: 6, maxlength: 26 }"></mt-field>
+      <mt-field placeholder="请设置新密码" type="password" v-model.trim="newPwd" :attr="{ minlength: 6, maxlength: 26 }"></mt-field>
+      <mt-field placeholder="请重复新密码" type="password" v-model.trim="newPwdRe" :attr="{ minlength: 6, maxlength: 26 }"></mt-field>
     </div>
     <div class="f3">
-      <mt-button type="primary" size="large" v-on:click="submit">确定</mt-button>
+      <mt-button type="primary" size="large" disabled v-if="oldPwd === '' || newPwd === '' || newPwdRe === '' ">确定</mt-button>
+      <mt-button type="primary" size="large" v-on:click="submit" v-if="oldPwd !== '' && newPwd !== '' && newPwdRe !== '' ">确定</mt-button>
     </div>
     <div class="f4">
       <span>请输入数字和字母（区分大小写），6-26位字符</span>
@@ -20,6 +21,7 @@
 </template>
 
 <script>
+import { Toast } from 'mint-ui'
 export default {
   name: 'UpdatePwd',
   data () {
@@ -30,14 +32,39 @@ export default {
     }
   },
   methods: {
-    submit: function () {
-      var params = {
-        'tokenId': this.$store.state.tokenId,
-        'unionId': this.$store.state.unionId,
-        'oldPwd': this.oldPwd,
-        'newPwd': this.newPwd
+    checkPwd: function () {
+      // if (pwd === '') return
+      var reg = /^[0-9a-zA-Z]{6,26}$/
+      console.log(this.oldPwd, reg.test(this.oldPwd), 999)
+      if (!reg.test(this.oldPwd)) {
+        Toast('请输入数字或字母（区分大小写），6-26位字符原密码')
+        return false
       }
-      this.$store.dispatch('updatePwd', params)
+      return true
+    },
+    checkPwdRe: function () {
+      if (this.newPwdRe === '') return
+      var reg = /^[0-9a-zA-Z]{6,26}$/
+      if (this.newPwd === this.newPwdRe && reg.test(this.newPwdRe)) {
+        return true
+      } else if (this.newPwd !== this.newPwdRe) {
+        Toast('新密码两次输入不一致')
+        return false
+      } else {
+        Toast('请输入数字或字母（区分大小写），6-26位字符新密码')
+        return false
+      }
+    },
+    submit: function () {
+      if (this.checkPwd() === true && this.checkPwdRe() === true) {
+        var params = {
+          'tokenId': this.$store.state.tokenId,
+          'unionId': this.$store.state.unionId,
+          'oldPwd': this.oldPwd,
+          'newPwd': this.newPwd
+        }
+        this.$store.dispatch('updatePwd', params)
+      }
     }
   }
 }

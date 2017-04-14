@@ -6,26 +6,14 @@
   	<div class="aff_content">
   		<div class="aff_noaffiche" v-show="noAfficheShow"></div>
 	  	<div class="aff_title">
-	  		共收到{{num}}条公告
+	  		共收到{{ affiches.length }}条公告
 	  	</div>
   		<ul>
-  			<li class="aff_item">
-  				<h3>下周拓展公告</h3>
-  				<p>公司下周举行拓展公告，全员必须参加，公司下周举行拓展公告，全员必须参加公司下周举行拓展公告，全员必须参加</p>
-  				<span>2016-12-27 12:12</span>
-  				<router-link to="/afficheInfo"></router-link>
-  			</li>
-  			<li class="aff_item">
-  				<h3>下周拓展公告</h3>
-  				<p>公司下周举行拓展公告，全员必须参加，公司下周举行拓展公告，全员必须参加公司下周举行拓展公告，全员必须参加</p>
-  				<span>2016-12-27 12:12</span>
-  				<router-link to="/afficheInfo"></router-link>
-  			</li>
-  			<li class="aff_item">
-  				<h3>下周拓展公告</h3>
-  				<p>公司下周举行拓展公告，全员必须参加，公司下周举行拓展公告，全员必须参加公司下周举行拓展公告，全员必须参加</p>
-  				<span>2016-12-27 12:12</span>
-  				<router-link to="/afficheInfo"></router-link>
+  			<li class="aff_item" v-for="i,index in affiches">
+  				<h3>{{ i.title }}</h3>
+  				<p>{{ i.content }}</p>
+  				<span>{{ i.createTime }}</span>
+  				<!-- <router-link to="/afficheInfo"></router-link> -->
   			</li>
   		</ul>
   	</div>
@@ -33,13 +21,26 @@
 </template>
 
 <script>
+import { Toast } from 'mint-ui'
 export default {
   name: 'affiche',
   data () {
     return {
-      num: 3,
+      affiches: [],
       noAfficheShow: false
     }
+  },
+  created () {
+    this.$http.get('/common-push/v1/push?type=4&startTime=0&isPreview=false&format=yyyy-MM-dd%20HH%3Amm', {'headers': {'APPkey': '3'}}).then(function (res) {
+      // console.log(res.body)
+      this.affiches = res.body
+    }).catch(function (response) {
+      if (response.body.code !== 200 && response.body.message) {
+        Toast(response.body.message)
+      } else {
+        Toast('哇哦，网络不给力')
+      }
+    })
   }
 }
 </script>
@@ -77,17 +78,18 @@ export default {
 		font-size: .24rem;
 	}
 	.aff_item{
-		width: 100%;height: 1.4rem;border-bottom: 1px solid #eee;
+		width: 100%;height: auto;border-bottom: 1px solid #eee;
 		padding: .18rem .25rem 0 .3rem;position: relative;
 		h3{
 			text-align: left;height: .55rem;line-height: .55rem;font-size: .3rem;
 		}
 		p{
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow:ellipsis; 
-			height: .48rem;line-height: .48rem;font-size: .22rem;
-			color: #666;
+      height: auto;line-height: .48rem;font-size: .22rem;
+      color: #666;
+      word-wrap:break-word;
+      word-break:break-all;
+      text-align: left;
+
 		}
 		span{
 			position: absolute;top:.35rem;right: .3rem;font-size: .2rem;color: #666;

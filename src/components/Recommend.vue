@@ -24,7 +24,7 @@
 			<p class="recTitile"><span>需求</span>：</p>
 			<div class="recContent">
 				<ul>
-					<li v-for="i,index in arrDx" @click="fun(index)" :class="{'isChecked':arrIsChecked[index]}">{{ i }}</li>
+					<li v-for="i,index in arrDx" @click="fun(index,i)" :class="{'isChecked':arrIsChecked[index]}">{{ i }}</li>
 				</ul>
 			</div>
 			<p class="recTitile"><span>需求备注</span>：</p>
@@ -33,7 +33,7 @@
 			</div>
 			<p class="recTitile"><span>金管家信息</span></p>
 			<div class="recInfo">
-				<p><span>李豹</span>15278787878</p>
+				<p><span>{{ goldenName }}</span>{{ goldenTel }}</p>
 			</div>
 		</div>
 		<button @click="submit()" :class="{'addchildacc_submit':true,'addchildacc_submit_allowed':submitAllowed}">推荐给金管家</button>
@@ -45,34 +45,49 @@ export default {
   name: 'Recommend',
   data () {
     return {
+      flag: false,
       checked: 1,
-      arrDx: ['新房', '二手房', '出租房', '装修', '家政'],
+      arrDx: ['新房', '二手房', '大家装', '健康之旅', '美丽之旅'],
+      // 已选中的需求
       arrChecked: [],
+      // 标记需求是否被选中
       arrIsChecked: [],
       submitAllowed: false,
       name: '',
       phoneNum: '',
       textAreaValue: '',
-      arrReq: []
+      // arrReq: [],
+      selectedReq: [],
+      goldenName: this.$store.state.goldenName,
+      goldenTel: this.$store.state.goldenTel
     }
   },
   created () {
+    this.selectedReq = this.$route.query.type
+    // console.log(this.selectedReq)
     var self = this
     this.arrDx.forEach(function (element, index) {
-      self.arrIsChecked.push(false)
+      if (decodeURI(self.selectedReq).search(element) !== -1) {
+        self.arrIsChecked.push(true)
+        self.arrChecked.push(element)
+      } else {
+        self.arrIsChecked.push(false)
+      }
     })
+    // this.isReqChoosed()
+    this.setBtnStatus()
   },
   methods: {
     nameBlue () {
       var reg = /^[\u2E80-\u9FFF]{2,20}$/
       if (!reg.test(this.name)) {
-        Toast('请输入2-20位汉字')
+        Toast('请输入1-10位汉字')
         return false
       }
       return true
     },
     textArea () {
-      if (this.textAreaValue.length > 200) {
+      if (this.textAreaValue.length > 10) {
         Toast('最多可以输入200字符')
       }
     },
@@ -92,29 +107,30 @@ export default {
       if (this.checked === status) return
       this.checked = status
     },
-    fun (index) {
+    fun (index, i) {
+      // console.log(index)
       this.arrIsChecked.splice(index, 1, !this.arrIsChecked[index])
-      var ind = this.arrChecked.indexOf(index)
+      var ind = this.arrChecked.indexOf(i)
       if (ind !== -1) {
         this.arrChecked.splice(ind, 1)
       } else {
-        this.arrChecked.push(index)
+        this.arrChecked.push(i)
       }
-      this.isReqChoosed()
+      // this.isReqChoosed()
       this.setBtnStatus()
     },
-    isReqChoosed () {
-      var self = this
-      self.arrReq = []
-      this.arrChecked.forEach(function (element, index) {
-        if (self.arrDx[element]) {
-          self.arrReq.push(self.arrDx[element])
-        }
-      })
-    },
+    // isReqChoosed () {
+    //   var self = this
+    //   self.arrReq = []
+    //   this.arrChecked.forEach(function (element, index) {
+    //     if (self.arrDx.indexOf(element) !== -1) {
+    //       self.arrReq.push(self.arrDx[index])
+    //     }
+    //   })
+    // },
     // 设置按钮状态
     setBtnStatus () {
-      if (this.name === '' || this.phoneNum === '' || this.arrReq.length === 0) {
+      if (this.name === '' || this.phoneNum === '' || this.arrChecked.length === 0) {
         this.submitAllowed = false
       } else {
         this.submitAllowed = true
@@ -122,44 +138,81 @@ export default {
     },
     // 提交处理
     submit () {
+      if (this.flag) return
+      this.flag = true
+      // console.log(this.arrIsChecked)
       if (!this.submitAllowed) return
-      if (this.arrReq.length === 0) {
-        Toast('请选择需求')
-        return
-      };
+      // if (this.arrChecked.length === 0) {
+      //   Toast('请选择需求')
+      //   return
+      // };
       if (this.testPhoneNum() && this.nameBlue()) {
         var param = {
           'name': this.name,
-          'sex': this.checked === 1 ? 'female' : 'male',
+          'sex': this.checked === 1 ? 'male' : 'female',
           'tel': this.phoneNum,
           'contract': this.phoneNum,
-          'loginDepId': '8de620a693f39d2e4dc504af1a87d325',
+          'loginDepId': '',
           'customerSource': '',
-          'goldenCommon': {
-            'goldenTel': '15910964657',
-            'goldenName': '柳旭影',
-            'inputManName': '闫梦翔',
-            'inputManTel': '13811657851',
-            'belongManName': '闫梦翔',
-            'belongManTel': '13811657851',
-            'goldenId': '0369b8ed68ee0dee848e5315a0dad3dd'
-          },
+          'goldenCommon': {},
+          'remarks': this.textAreaValue,
           'unionCommon': {
-            'unionId': 'UIN2016071500003331',
-            'unionName': '上海立骥家政服务有限公司'
+            'unionId': this.$store.state.unionBusinessId,
+            'unionName': this.$store.state.unionBusinessName,
+            'unionUserId': this.$store.state.unionId,
+            'unionUserMobile': this.$store.state.mobile,
+            'unionUserParentId': this.$store.state.parentId
           },
           'busDataParams': [],
           'customerStatus': '',
           'isPrivateFlag': 1
         }
-        this.$http.post('recommend' + '/v1/unionBusinessM/1.0/insertCustomerResource', param).then(function (res) {
-          console.log(res)
+        this.arrIsChecked.forEach(function (i, index) {
+          if (i) {
+            var type = 0
+            switch (index) {
+              case 0:
+                type = 4
+                break
+              case 1:
+                type = 1
+                break
+              case 2:
+                type = 5
+                break
+              case 3:
+                type = 8
+                break
+              case 4:
+                type = 7
+                break
+            }
+            var obj = {
+              'customerStatus': type,
+              'demandStatus': type
+            }
+            param['busDataParams'].push(obj)
+          }
+        })
+        var self = this
+        // this.$http.post('customer' + '/v1/unionBusinessM/1.0/insertCustomerResource', param).then(function (res) {
+        this.$http.post('/jysteward-centerapipre/v1/unionBusinessM/1.0/insertCustomerResource', param).then(function (res) {
           if (res.status === 200) {
             Toast('推荐成功')
             setTimeout(function () {
               location.href = '/#/customer'
             }, 3000)
+          } else {
+            Toast('哇哦，网络不给力')
           }
+          self.flag = false
+        }).catch(function (response) {
+          if (response.body.message) {
+            Toast(response.body.message)
+          } else {
+            Toast('哇哦，网络不给力')
+          }
+          self.flag = false
         })
       }
     }
@@ -176,7 +229,7 @@ export default {
 .InpField{ margin-top: 0.2rem; text-align: left;}
 .InpField p{ padding-left: 0.2rem; background-color: #fff;height: .9rem;line-height: .9rem;border-bottom: 1px solid #eee;text-align: left;font-size: .26rem;}
 .InpField p span:first-child{ display: inline-block; width: 1.6rem;text-align: justify;text-justify: distribute-all-lines;text-align-last: justify;-webkit-text-align-last: justify;}
-.InpField p input{border: 0;outline: none;}
+.InpField p input{border: 0;outline: none; font-size: .26rem; color: #666666;}
 .radio-btn input[type="radio"], .check-box input[type="checkbox"] {visibility: hidden;}
 .radio-btn {
     width: 0.4rem;
@@ -213,7 +266,8 @@ export default {
 }
 .InpField .recTitile{ text-align: left; height: 0.8rem; background-color: #eee;}
 .recContent{ background-color: #fff; border-top:1px solid #eee; border-bottom: 1px solid #eee; padding: 0.1rem 0.44rem 0.3rem; text-align: left;}
-.recContent ul li{ display: inline-block; text-align: center; width: 1.38rem; height: 0.44rem; border-radius: 0.22rem; border:0.01rem solid #ccc; margin:0.2rem 0.2rem 0 0; font-size: 0.28rem; color: #666; line-height: 0.44rem;}
+.recContent ul li{ display: inline-block; text-align: center; width: 1.5rem; height: 0.44rem; border-radius: 0.22rem; border:0.01rem solid #ccc; margin:0.2rem 0.18rem 0 0; font-size: 0.28rem; color: #666; line-height: 0.44rem;}
+.recContent ul li:nth-child(4){margin-right: 0;}
 .recContent ul li.isChecked{ border-color: #f60; color: #f60;}
 .Recommend .InpField .recInfo span{ margin-right:0.8rem; width: auto;}
 .submit{ margin-top: 0.4rem; width: 6.7rem; height: 0.88rem; line-height: 0.88rem; background-color:#f60; font-size: 0.32rem; color: #fff; border:none; border-radius: 0.08rem; }

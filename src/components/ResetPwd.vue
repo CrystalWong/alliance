@@ -6,14 +6,15 @@
       </router-link>
     </mt-header>
     <div class="f2">
-      <mt-field placeholder="请设置密码" type="password" v-model="newPwd"></mt-field>
-      <mt-field placeholder="请重复密码" type="password" v-model="newPwdRe"></mt-field>
+      <mt-field placeholder="请设置密码" type="password" v-model.trim="newPwd" :attr="{ minlength: 6, maxlength: 26 }" :state="checkPwd()"></mt-field>
+      <mt-field placeholder="请重复密码" type="password" v-model.trim="newPwdRe" :attr="{ minlength: 6, maxlength: 26 }" :state="checkPwdRe()"></mt-field>
     </div>
     <div class="f3">
-      <mt-button type="primary" size="large" v-on:click="submit">确定</mt-button>
+      <mt-button type="primary" size="large" disabled v-if="checkPwd() !== 'success' || checkPwdRe() !== 'success'">确定</mt-button>
+      <mt-button type="primary" size="large" v-on:click="submit" v-if="checkPwd() === 'success' && checkPwdRe() === 'success'">确定</mt-button>
     </div>
     <div class="f4">
-      <span>请输入数字和字母（区分大小写），6-26位字符</span>
+      <span>请输入数字或字母（区分大小写），6-26位字符</span>
     </div>
   </div>
 </template>
@@ -28,9 +29,25 @@ export default {
     }
   },
   methods: {
+    checkPwd () {
+      if (this.newPwd === '') return
+      var reg = /^[0-9a-zA-Z]{6,26}$/
+      if (!reg.test(this.newPwd)) {
+        return 'warning'
+      }
+      return 'success'
+    },
+    checkPwdRe () {
+      if (this.newPwdRe === '') return
+      if (this.newPwd === this.newPwdRe) {
+        return 'success'
+      } else {
+        return 'warning'
+      }
+    },
     submit: function () {
       var params = {
-        'mobile': '13000590717',
+        'mobile': window.sessionStorage.getItem('resetTel'),
         'newPwd': this.newPwd
       }
       this.$store.dispatch('resetPwd', params)

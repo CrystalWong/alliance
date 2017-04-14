@@ -41,8 +41,10 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+#menubar { width: 100%; }
 .menu-item {
   width: 1/3*100%;
+  display: block;
   .icon {
     display: block;
   }
